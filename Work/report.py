@@ -4,33 +4,24 @@
 # Exercise 2.4
 import sys
 import csv
+import fileparse
 
 def read_portfolio(filename):
     '''Computes the total cost (shares*price) of a portfolio file'''
     portfolio = []
-    with open(filename, 'rt') as f:
-        rows = csv.reader(f)
-        headers = next(rows)
-        for row in rows:
-            record = dict(zip(headers, row))
-            holding = (record['name'], int(record['shares']), float(record['price']))
-            portfolio.append(holding)
+    with open(filename, 'rt') as file:
+        portfolio = fileparse.parse_csv(file, selects=['name', 'shares', 'price'], types=[str, int, float])
+    portfolio = [list(record.values()) for record in portfolio]
     return portfolio
 
 def read_price(filename: str) -> dict:
     '''读取csv文件内容，存储到一个map中'''
     prices = {}
-    with open(filename, 'rt') as f:
-        rows = csv.reader(f)
-        for row in rows:
-            try:
-                name, price = row
-                prices[name] = float(price)
-            except ValueError as e:
-                pass
+    with open(filename, 'rt') as file:
+        prices = fileparse.parse_csv(file, types=[str, float], has_headers=False)
     return prices
 
-def make_report(portfolio, prices):
+def make_report(portfolio: list, prices: dict):
     report = []
     for row in portfolio:
         name, shares, price = row
@@ -50,5 +41,13 @@ def print_report(report):
 def portfolio_report(filename1: str, filename2: str) -> None:
     portfolio = read_portfolio(filename1)
     prices = read_price(filename2)
-    report = make_report(portfolio, prices)
-    print(report)
+    report = make_report(portfolio, dict(prices))
+    print_report(report)
+
+def main(filenames: list):
+    portfolio_report(filenames[0], filenames[1]) 
+
+if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        raise ValueError('参数长度不够')
+    main([sys.argv[1], sys.argv[2]])
