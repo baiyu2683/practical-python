@@ -16,13 +16,15 @@ class TableFormatter:
 
 class PlainTextFormatter(TableFormatter):
     def headings(self, headers: list):
+        self._headers = headers
         for header in headers:
-            print('{:>10s} '.format(header), end='')
+            print('{:>10s} '.format(header.lower()), end='')
         print()
         print('---------- ' * len(headers))
 
-    def row(self, rowdata: list, colnames: list=None):
+    def row(self, rowdata: list, colnames: list=[]):
         for colname in colnames:
+            colname = colname.lower()
             if hasattr(rowdata, colname):
                 print('{:>10s} '.format(str(getattr(rowdata, colname))), end='')
         print()

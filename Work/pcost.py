@@ -9,14 +9,7 @@ import report
 def portfolio_cost(filename):
     total = 0
     portfolio = report.read_portfolio(filename)
-    for no, record in enumerate(portfolio, start=1):
-        try:
-            cur_share = record.shares
-            cur_price = record.price
-            total += cur_share * cur_price
-        except ValueError as e:
-            print(f'Row {no}: Bad row: {record}', e)
-    print('Total cost', total)
+    print('Total cost', portfolio.total_cost)
 
 def main(argvs: list):
     if len(argvs) == 2:

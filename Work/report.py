@@ -7,6 +7,7 @@ import csv
 import fileparse
 import stock
 import tableformat
+from portfolio import Portfolio
 
 def read_portfolio(filename):
     '''Computes the total cost (shares*price) of a portfolio file'''
@@ -15,7 +16,7 @@ def read_portfolio(filename):
         portfolio = fileparse.parse_csv(file, selects=['name', 'shares', 'price'], types=[str, int, float])
     portfolio = [list(record.values()) for record in portfolio]
     portfolio = [stock.Stock(record[0], record[1], record[2]) for record in portfolio]
-    return portfolio
+    return Portfolio(portfolio)
 
 def read_price(filename: str) -> dict:
     '''读取csv文件内容，存储到一个map中'''
@@ -28,17 +29,17 @@ def make_report(portfolio: list, prices: dict):
     report = []
     for record in portfolio:
         name = record.name
-        shares = record.shares
-        price = record.price
         if name in prices:
             cur_price = prices[name]
-            report.append((name, shares, cur_price, cur_price - price))
+            record.change = round(cur_price - record.price, 2)
+        report.append(record)
     return report
 
 def print_report(report, formatter):
-    formatter.headings(('Name', 'Shares', 'Price', 'Change'))
+    headers = ('Name', 'Shares', 'Price', 'Change')
+    formatter.headings(headers)
     for row in report:
-        formatter.row(row)
+        formatter.row(row, headers)
 
 class UnknownTableFormatError(Exception):
     pass
