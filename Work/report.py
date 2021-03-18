@@ -5,6 +5,8 @@
 import sys
 import csv
 import fileparse
+import stock
+import tableformat
 
 def read_portfolio(filename):
     '''Computes the total cost (shares*price) of a portfolio file'''
@@ -12,6 +14,7 @@ def read_portfolio(filename):
     with open(filename, 'rt') as file:
         portfolio = fileparse.parse_csv(file, selects=['name', 'shares', 'price'], types=[str, int, float])
     portfolio = [list(record.values()) for record in portfolio]
+    portfolio = [stock.Stock(record[0], record[1], record[2]) for record in portfolio]
     return portfolio
 
 def read_price(filename: str) -> dict:
@@ -23,26 +26,42 @@ def read_price(filename: str) -> dict:
 
 def make_report(portfolio: list, prices: dict):
     report = []
-    for row in portfolio:
-        name, shares, price = row
+    for record in portfolio:
+        name = record.name
+        shares = record.shares
+        price = record.price
         if name in prices:
             cur_price = prices[name]
             report.append((name, shares, cur_price, cur_price - price))
     return report
 
-def print_report(report):
-    name, share, price, change = ('Name', 'Shares', 'Price', 'Change')
-    print('{:>10s} {:>10s} {:>10s} {:>10s}'.format(name, share, price, change))
-    print('-'*10, '-'*10, '-'*10, '-'*10)
-    for name, share, price, change in report:
-        price = '$' + f'{price:0.2f}'
-        print(f'{name:>10s} {share:>10d} {price:>10s} {change:>10.2f}')
+def print_report(report, formatter):
+    formatter.headings(('Name', 'Shares', 'Price', 'Change'))
+    for row in report:
+        formatter.row(row)
 
-def portfolio_report(filename1: str, filename2: str) -> None:
+class UnknownTableFormatError(Exception):
+    pass
+
+def create_formatter(name: str) -> tableformat.TableFormatter:
+    if name == 'txt':
+        return tableformat.PlainTextFormatter()
+    elif name == 'csv':
+        return tableformat.CSVTableFormatter()
+    else:
+        raise UnknownTableFormatError(f'Unknown format {name}')
+
+def portfolio_report(filename1: str, filename2: str, fmt: str='txt') -> None:
     portfolio = read_portfolio(filename1)
     prices = read_price(filename2)
     report = make_report(portfolio, dict(prices))
-    print_report(report)
+    formatter = create_formatter(fmt)
+    print_report(report,formatter)
+
+def print_table(report: list, colnames: list, formatter: tableformat.TableFormatter):
+    formatter.headings(tuple(colnames))
+    for row in report:
+        formatter.row(row, colnames)
 
 def main(filenames: list):
     portfolio_report(filenames[0], filenames[1]) 

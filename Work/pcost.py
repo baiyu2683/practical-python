@@ -11,9 +11,9 @@ def portfolio_cost(filename):
     portfolio = report.read_portfolio(filename)
     for no, record in enumerate(portfolio, start=1):
         try:
-            cur_count = int(record[1])
-            cur_share = float(record[2])
-            total += cur_count * cur_share
+            cur_share = record.shares
+            cur_price = record.price
+            total += cur_share * cur_price
         except ValueError as e:
             print(f'Row {no}: Bad row: {record}', e)
     print('Total cost', total)
