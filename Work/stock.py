@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 # stock.py
+from typedproperty import String, Integer, Float
 
 class Stock:
     # 限制属性名集合,访问其他属性会抛出异常
-    __slots__ = ('name', '_shares', 'price', '_change')
+    #__slots__ = ('name', '_shares', 'price', '_change')
+    #name = String('name') 
+    #shares = Integer('shares') 
+    #price = Float('price') 
+
     def __init__(self, name, shares, price):
         self.name = name
         self.shares = shares
@@ -15,8 +20,8 @@ class Stock:
 
     @shares.setter
     def shares(self, value):
-        if not isinstance(value, int):
-            raise TypeError('Expected int')
+        #if not isinstance(value, int):
+        #    raise TypeError('Expected int')
         self._shares = value
     
     @property

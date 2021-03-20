@@ -1,10 +1,31 @@
 #!/usr/bin/env python
 # portfolio.py
+import fileparse
+import stock
 
 class Portfolio:
 
-    def __init__(self, holdings):
-        self._holdings = holdings
+    def __init__(self):
+        self._holdings = []
+
+    def append(self, holding):
+        if not isinstance(holding, stock.Stock):
+            raise TypeError('Expected a Stock instance')
+        self._holdings.append(holding)
+    
+    @classmethod
+    def from_csv(cls, filename, **opts):
+        '''Computes the total cost (shares*price) of a portfolio file'''
+        self = cls()
+        portfolio = []
+        with open(filename, 'rt') as file:
+            portfolio = fileparse.parse_csv(file, selects=['name', 'shares', 'price'], types=[str, int, float], **opts)
+        portfolio = [list(record.values()) for record in portfolio]
+        for d in portfolio:
+            self.append(stock.Stock(*d))
+        return self
+
+
 
     @property
     def total_cost(self):

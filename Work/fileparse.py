@@ -4,8 +4,16 @@
 # Exercise 3.3
 import csv
 import io
+import logging
 
-def parse_csv(content, selects: list=None, types: list=None, has_headers: bool=True, delimiter: str=',') -> list:
+logging.basicConfig(
+    filename = 'app.log',
+    filemode='w',
+    level = logging.WARNING,
+)
+log = logging.getLogger(__name__)
+
+def parse_csv(content, selects: list=None, types: list=None, has_headers: bool=True, delimiter: str=',', **opts) -> list:
     '''
     解析csv文件，并存到list中
     content: 文件或者可迭代类型
@@ -14,6 +22,10 @@ def parse_csv(content, selects: list=None, types: list=None, has_headers: bool=T
     has_headers: 是否有标题
     delimiter: csv文件数据分隔符
     '''
+    silence_errors = False
+    if 'silence_errors' in opts:
+        silence_errors = opts['silence_errors']
+    
     rows = csv.reader(content, delimiter=delimiter)
         
     print('row', rows)
@@ -42,8 +54,9 @@ def parse_csv(content, selects: list=None, types: list=None, has_headers: bool=T
             try:
                 row = [func(val) for func, val in zip(types, row)]
             except Exception as e:
-                print(f'Row {index}: Couldn\'t convert {row}')
-                print(f'Row {index}: Reason', e)
+                if not silence_errors:
+                    log.warning('row %d: Couldn\'t convert %s', index, row)
+                    log.debug('Row %d: Reason %s', index, e)
         if has_headers:
              record = dict(zip(headers, row))
         else:
